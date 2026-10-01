@@ -5,12 +5,20 @@ function RegisteredStatus() {
   const [address, setAddress] = useState("");
   const [registered, setRegistered] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const checkRegistered = async (e) => {
     e.preventDefault();
 
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      setError("Enter a valid Ethereum address.");
+      setRegistered(null);
+      return;
+    }
+
     try {
       setLoading(true);
+      setError("");
       setRegistered(null);
 
       const contract = await getReadContract();
@@ -20,7 +28,7 @@ function RegisteredStatus() {
       setRegistered(result);
     } catch (error) {
       console.error(error);
-      alert(
+      setError(
         error?.reason ||
           error?.shortMessage ||
           "Failed to check registration."
@@ -45,6 +53,8 @@ function RegisteredStatus() {
           <input
             type="text"
             placeholder="0x..."
+            autoComplete="off"
+            required
             value={address}
             onChange={(e) => setAddress(e.target.value)}
           />
@@ -58,6 +68,8 @@ function RegisteredStatus() {
           {loading ? "Checking..." : "Check Status"}
         </button>
       </form>
+
+      {error && <div className="error" role="alert">{error}</div>}
 
       {registered !== null && (
         <div

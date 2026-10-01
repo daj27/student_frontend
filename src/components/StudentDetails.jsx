@@ -63,6 +63,8 @@ function StudentDetails() {
           <input
             type="text"
             placeholder="0x..."
+            autoComplete="off"
+            required
             value={address}
             onChange={(e) => setAddress(e.target.value)}
           />

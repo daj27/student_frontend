@@ -48,6 +48,13 @@ function ConnectWallet({ account, setAccount }) {
             {account.slice(0, 6)}...
             {account.slice(-4)}
           </strong>
+          <button
+            className="disconnect-button"
+            type="button"
+            onClick={() => setAccount("")}
+          >
+            Disconnect
+          </button>
         </div>
       ) : (
         <button

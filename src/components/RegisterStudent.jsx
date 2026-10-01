@@ -69,6 +69,8 @@ function RegisterStudent() {
           <input
             type="text"
             placeholder="Enter your name"
+            maxLength={80}
+            required
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -79,7 +81,9 @@ function RegisterStudent() {
           <input
             type="number"
             min="1"
+            max="150"
             placeholder="Enter your age"
+            required
             value={age}
             onChange={(e) => setAge(e.target.value)}
           />
@@ -90,6 +94,8 @@ function RegisterStudent() {
           <input
             type="text"
             placeholder="e.g. Computer Science"
+            maxLength={100}
+            required
             value={course}
             onChange={(e) => setCourse(e.target.value)}
           />
