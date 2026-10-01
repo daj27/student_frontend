@@ -1,38 +1,48 @@
 import { useState } from "react";
 import { ethers } from "ethers";
+import { SEPOLIA_CHAIN_ID } from "../constants/contract";
 
 function ConnectWallet({ account, setAccount }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const connectWallet = async () => {
+    setError("");
+
     try {
       if (!window.ethereum) {
-        alert("Please install MetaMask.");
+        setError("MetaMask was not detected. Open this app in a browser with MetaMask installed and unlocked.");
         return;
       }
 
       setLoading(true);
 
-      const provider = new ethers.BrowserProvider(
-        window.ethereum
-      );
+      let provider = new ethers.BrowserProvider(window.ethereum);
 
       const accounts = await provider.send(
         "eth_requestAccounts",
         []
       );
 
-      const network = await provider.getNetwork();
+      let network = await provider.getNetwork();
 
-      if (network.chainId !== 11155111n) {
-        alert("Please switch MetaMask to Sepolia.");
-        return;
+      if (network.chainId !== BigInt(SEPOLIA_CHAIN_ID)) {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: `0x${SEPOLIA_CHAIN_ID.toString(16)}` }],
+        });
+        provider = new ethers.BrowserProvider(window.ethereum);
+        network = await provider.getNetwork();
+      }
+
+      if (network.chainId !== BigInt(SEPOLIA_CHAIN_ID)) {
+        throw new Error("MetaMask must be connected to Sepolia.");
       }
 
       setAccount(accounts[0]);
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      setError(error?.shortMessage || error?.message || "Could not connect wallet.");
     } finally {
       setLoading(false);
     }
@@ -65,6 +75,7 @@ function ConnectWallet({ account, setAccount }) {
           {loading ? "Connecting..." : "Connect Wallet"}
         </button>
       )}
+      {error && <div className="wallet-error" role="alert">{error}</div>}
     </div>
   );
 }

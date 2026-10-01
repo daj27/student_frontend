@@ -31,6 +31,7 @@ function RegisteredStatus() {
       setError(
         error?.reason ||
           error?.shortMessage ||
+          error?.message ||
           "Failed to check registration."
       );
     } finally {

@@ -41,6 +41,7 @@ function StudentDetails() {
       setError(
         error?.reason ||
           error?.shortMessage ||
+          error?.message ||
           "Could not retrieve student."
       );
     } finally {

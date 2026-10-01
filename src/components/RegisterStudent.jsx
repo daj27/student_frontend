@@ -48,6 +48,7 @@ function RegisterStudent() {
       setStatus(
         error?.reason ||
           error?.shortMessage ||
+          error?.message ||
           "Transaction failed."
       );
     } finally {

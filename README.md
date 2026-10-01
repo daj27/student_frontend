@@ -1,3 +1,26 @@
+# Student Registry
+
+A React app for registering student records and querying the registry contract on Ethereum Sepolia.
+
+## Deployment
+
+Live app: [https://student-frontend-jet-rho.vercel.app/](https://student-frontend-jet-rho.vercel.app/)
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+The read-only student lookups use a public Sepolia RPC endpoint. Connecting a wallet and registering a student requires MetaMask on Sepolia with Sepolia ETH for gas.
+
+## Checks
+
+```bash
+npm run lint
+npm run build
+```
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
