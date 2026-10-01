@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ethers } from "ethers";
-import { SEPOLIA_CHAIN_ID } from "../constants/contract";
+import { SEPOLIA_CHAIN_ID, SEPOLIA_RPC_URL } from "../constants/contract";
 
 function ConnectWallet({ account, setAccount }) {
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,8 @@ function ConnectWallet({ account, setAccount }) {
 
       setLoading(true);
 
-      let provider = new ethers.BrowserProvider(window.ethereum);
+      const ethereum = window.ethereum.providers?.find((item) => item.isMetaMask) || window.ethereum;
+      let provider = new ethers.BrowserProvider(ethereum);
 
       const accounts = await provider.send(
         "eth_requestAccounts",
@@ -27,11 +28,33 @@ function ConnectWallet({ account, setAccount }) {
       let network = await provider.getNetwork();
 
       if (network.chainId !== BigInt(SEPOLIA_CHAIN_ID)) {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: `0x${SEPOLIA_CHAIN_ID.toString(16)}` }],
-        });
-        provider = new ethers.BrowserProvider(window.ethereum);
+        const chainId = `0x${SEPOLIA_CHAIN_ID.toString(16)}`;
+
+        try {
+          await ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId }],
+          });
+        } catch (switchError) {
+          if (switchError?.code !== 4902) throw switchError;
+
+          await ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId,
+              chainName: "Sepolia",
+              nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+              rpcUrls: [SEPOLIA_RPC_URL],
+              blockExplorerUrls: ["https://sepolia.etherscan.io"],
+            }],
+          });
+          await ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId }],
+          });
+        }
+
+        provider = new ethers.BrowserProvider(ethereum);
         network = await provider.getNetwork();
       }
 
@@ -42,7 +65,15 @@ function ConnectWallet({ account, setAccount }) {
       setAccount(accounts[0]);
     } catch (error) {
       console.error(error);
-      setError(error?.shortMessage || error?.message || "Could not connect wallet.");
+      const errorCode = error?.code ?? error?.info?.error?.code;
+
+      if (errorCode === 4001) {
+        setError("Connection was cancelled in MetaMask.");
+      } else if (errorCode === -32002) {
+        setError("MetaMask already has a pending request. Open MetaMask to respond to it.");
+      } else {
+        setError(error?.shortMessage || error?.message || "Could not connect wallet.");
+      }
     } finally {
       setLoading(false);
     }
